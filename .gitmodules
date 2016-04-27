@@ -25,3 +25,6 @@
 [submodule "plugins/emqchat"]
 	path = plugins/emqchat
 	url = https://github.com/erylee/emqchat.git
+[submodule "plugins/emqchat_edu"]
+	path = plugins/emqchat_edu
+	url = git@github.com:emqplus/emqchat_edu.git
