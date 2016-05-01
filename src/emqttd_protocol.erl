@@ -167,7 +167,7 @@ process(Packet = ?CONNECT_PACKET(Var), State0) ->
     %% Run hooks
     emqttd:run_hooks('client.connected', [ReturnCode1], client(State3)),
     %% Send connack
-    send(?CONNACK_PACKET(ReturnCode1, sp(SessPresent)), State3);
+    send(?CONNACK_PACKET(ReturnCode1, sp(SessPresent), emqttd_time:now_to_secs()), State3);
 
 process(Packet = ?PUBLISH_PACKET(_Qos, Topic, _PacketId, _Payload), State) ->
     case check_acl(publish, Topic, client(State)) of

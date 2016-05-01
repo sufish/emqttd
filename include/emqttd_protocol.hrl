@@ -154,7 +154,8 @@
 
 -record(mqtt_packet_connack, {
     ack_flags = ?RESERVED   :: 0 | 1,
-    return_code             :: mqtt_connack() }).
+    return_code             :: mqtt_connack(),
+    timestamp               :: non_neg_integer()}).
 
 -record(mqtt_packet_publish, {
     topic_name  :: binary(),
@@ -202,10 +203,11 @@
     #mqtt_packet{header   = #mqtt_packet_header{type = ?CONNACK},
                  variable = #mqtt_packet_connack{return_code = ReturnCode}}).
 
--define(CONNACK_PACKET(ReturnCode, SessPresent),
+-define(CONNACK_PACKET(ReturnCode, SessPresent, Timestamp),
     #mqtt_packet{header   = #mqtt_packet_header{type = ?CONNACK},
                  variable = #mqtt_packet_connack{ack_flags = SessPresent,
-                                                 return_code = ReturnCode}}).
+                                                 return_code = ReturnCode,
+                                                 timestamp = Timestamp}}).
 
 -define(PUBLISH_PACKET(Qos, PacketId),
     #mqtt_packet{header   = #mqtt_packet_header{type = ?PUBLISH,

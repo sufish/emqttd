@@ -81,8 +81,8 @@ serialize_variable(?CONNECT, #mqtt_packet_connect{client_id   =  ClientId,
     {VariableBin, <<PayloadBin1/binary, UserPasswd/binary>>};
 
 serialize_variable(?CONNACK, #mqtt_packet_connack{ack_flags   = AckFlags,
-                                                  return_code = ReturnCode}, undefined) ->
-    {<<AckFlags:8, ReturnCode:8>>, <<>>};
+                                                  return_code = ReturnCode, timestamp = Timestamp}, undefined) ->
+    {<<AckFlags:8, ReturnCode:8, Timestamp:32/big-unsigned-integer>>,  <<>>};
 
 serialize_variable(?SUBSCRIBE, #mqtt_packet_subscribe{packet_id = PacketId,
                                                       topic_table = Topics }, undefined) ->
