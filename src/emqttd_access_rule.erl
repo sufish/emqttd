@@ -19,7 +19,7 @@
 -include("emqttd.hrl").
 
 -type who() :: all | binary() |
-               {ipaddr, esockd_cidr:cidr_string()} |
+               {ipaddr, esockd_access:cidr()} |
                {client, binary()} |
                {user, binary()}.
 
@@ -51,7 +51,8 @@ compile({A, Who, Access, TopicFilters}) when ?ALLOW_DENY(A) ->
 compile(who, all) ->
     all;
 compile(who, {ipaddr, CIDR}) ->
-    {ipaddr, esockd_cidr:parse(CIDR, true)};
+    {Start, End} = esockd_access:range(CIDR),
+    {ipaddr, {CIDR, Start, End}};
 compile(who, {client, all}) ->
     {client, all};
 compile(who, {client, ClientId}) ->
@@ -106,8 +107,9 @@ match_who(#mqtt_client{username = Username}, {user, Username}) ->
     true;
 match_who(#mqtt_client{peername = undefined}, {ipaddr, _Tup}) ->
     false;
-match_who(#mqtt_client{peername = {IP, _}}, {ipaddr, CIDR}) ->
-    esockd_cidr:match(IP, CIDR);
+match_who(#mqtt_client{peername = {IP, _}}, {ipaddr, {_CDIR, Start, End}}) ->
+    I = esockd_access:atoi(IP),
+    I >= Start andalso I =< End;
 match_who(Client, {'and', Conds}) when is_list(Conds) ->
     lists:foldl(fun(Who, Allow) ->
                   match_who(Client, Who) andalso Allow

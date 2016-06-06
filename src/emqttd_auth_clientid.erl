@@ -108,8 +108,9 @@ load(Fd, {ok, Line}, Clients) when is_list(Line) ->
             [#mqtt_auth_clientid{client_id = ClientId} | Clients];
         [ClientId, IpAddr0] ->
             IpAddr = string:strip(IpAddr0, right, $\n),
+            Range = esockd_access:range(IpAddr),
             [#mqtt_auth_clientid{client_id = list_to_binary(ClientId),
-                                 ipaddr = esockd_cidr:parse(IpAddr, true)} | Clients];
+                                 ipaddr = {IpAddr, Range}}|Clients];
         BadLine ->
             lager:error("BadLine in clients.config: ~s", [BadLine]),
             Clients
@@ -122,12 +123,11 @@ load(Fd, eof, Clients) ->
 
 check_clientid_only(ClientId, IpAddr) ->
     case mnesia:dirty_read(?AUTH_CLIENTID_TAB, ClientId) of
-        [] ->
-            {error, clientid_not_found};
-        [#?AUTH_CLIENTID_TAB{ipaddr = undefined}] ->
-            ok;
-        [#?AUTH_CLIENTID_TAB{ipaddr = CIDR}] ->
-            case esockd_cidr:match(IpAddr, CIDR) of
+        [] -> {error, clientid_not_found};
+        [#?AUTH_CLIENTID_TAB{ipaddr = undefined}]  -> ok;
+        [#?AUTH_CLIENTID_TAB{ipaddr = {_, {Start, End}}}] ->
+            I = esockd_access:atoi(IpAddr),
+            case I >= Start andalso I =< End of
                 true  -> ok;
                 false -> {error, wrong_ipaddr}
             end

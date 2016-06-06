@@ -89,7 +89,7 @@ check_acl(Client, PubSub, Topic, [{Mod, State, _Seq}|AclMods]) ->
     end.
 
 %% @doc Reload ACL Rules.
--spec(reload_acl() -> list(ok | {error, already_existed})).
+-spec(reload_acl() -> list(ok | {error, any()})).
 reload_acl() ->
     [Mod:reload_acl(State) || {Mod, State, _Seq} <- lookup_mods(acl)].
 
@@ -201,5 +201,5 @@ mod(Prefix, Name) ->
     list_to_atom(lists:concat([Prefix, Name])).
 
 if_existed(false, Fun) -> Fun();
-if_existed(_Mod, _Fun) -> {error, already_existed}.
+if_existed(true, _Fun) -> {error, existed}.
 
